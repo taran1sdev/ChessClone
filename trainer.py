@@ -7,7 +7,7 @@ def train_clone_model(
         dataset, 
         epochs: int = 10, 
         batch_size: int = 32,
-        lr: float = 0) -> ChessPolicyNet:
+        lr: float = 0.001) -> ChessPolicyNet:
     
     model = ChessPolicyNet()
     if len(dataset) == 0:

@@ -5,12 +5,7 @@ import torch
 import numpy as np
 from data_loader import board_to_tensor, move_to_index
 
-
-# Currently just using the neural net is insufficient
-# The opening phase should use the moves most commonly played
-# if multiple different moves are played we should use a weighted
-# random choice. Eventually we should prioritise the moves 
-# played most commonly AND most recently 
+# When faced with uncommon moves the AI 
 class AIPlayerClone:
     def __init__(self, 
                  model,

@@ -1,21 +1,30 @@
 import chess
-from data_loader import fetch_and_prepare_dataset, get_player_rapid_elo
+from data_loader import (
+        fetch_and_prepare_dataset, 
+        get_player_rating_data,
+        fetch_elo_bracket_dataset 
+)
+
 from trainer import train_clone_model
 from engine import AIPlayerClone
+from torch.utils.data import ConcatDataset
 
 def main():
     username = input("Enter lichess username: ").strip()
     
-    rapid_elo = get_player_rapid_elo(username) 
+    elo, rd = get_player_rating_data(username) 
     
-    dataset, move_tree = fetch_and_prepare_dataset(username)
+    base_dataset = fetch_elo_bracket_dataset(elo, rd)
+    user_dataset, move_tree = fetch_and_prepare_dataset(username)
     
-    model = train_clone_model(dataset, epochs=5)
+    combined_dataset = ConcatDataset([base_dataset, user_dataset])
+
+    model = train_clone_model(combined_dataset, epochs=5)
 
     clone_engine = AIPlayerClone(
             model, 
             move_tree=move_tree, 
-            fallback_elo=rapid_elo)
+            fallback_elo=elo)
 
     board = chess.Board()
     user_color = chess.WHITE
