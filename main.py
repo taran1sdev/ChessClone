@@ -8,11 +8,14 @@ def main():
     
     rapid_elo = get_player_rapid_elo(username) 
     
-    dataset = fetch_and_prepare_dataset(username)
+    dataset, move_tree = fetch_and_prepare_dataset(username)
     
     model = train_clone_model(dataset, epochs=5)
 
-    clone_engine = AIPlayerClone(model, rapid_elo)
+    clone_engine = AIPlayerClone(
+            model, 
+            move_tree=move_tree, 
+            fallback_elo=rapid_elo)
 
     board = chess.Board()
     user_color = chess.WHITE

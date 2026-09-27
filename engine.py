@@ -1,20 +1,45 @@
+import random
 import chess
 import chess.engine
 import torch
 import numpy as np
 from data_loader import board_to_tensor, move_to_index
 
+
+# Currently just using the neural net is insufficient
+# The opening phase should use the moves most commonly played
+# if multiple different moves are played we should use a weighted
+# random choice. Eventually we should prioritise the moves 
+# played most commonly AND most recently 
 class AIPlayerClone:
     def __init__(self, 
-                 model, 
-                 fallback_elo, 
+                 model,
+                 move_tree: dict,
+                 fallback_elo: int, 
                  stockfish_path: str = "stockfish"):
         self.model = model
         self.model.eval()
+        self.move_tree = move_tree
         self.fallback_elo = fallback_elo
         self.stockfish_path = stockfish_path
 
     def get_move(self, board: chess.Board) -> chess.Move:
+        # generate and extended position description to use as a key
+        state_key = board.epd()
+        
+        if state_key in self.move_tree and self.move_tree[state_key]:
+            played_moves = self.move_tree[state_key]
+
+            moves = list(played_moves.keys())
+            counts = list(played_moves.values())
+            chosen = random.choices(moves, weights=counts, k=1)[0]
+
+            print("[Opening Book] Following user repertoire: "
+                + f"{chosen}")
+            
+            return chess.Move.from_uci(chosen)
+        
+        # Once out of player repertoire - ask the neural net
         tensor = torch.tensor(board_to_tensor(board)).unsqueeze(0)
 
         with torch.no_grad():

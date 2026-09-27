@@ -54,6 +54,7 @@ class ChessGameDataset(Dataset):
 
 def fetch_and_prepare_dataset(username: str) -> ChessGameDataset:
     token = os.getenv("LICHESS_API_TOKEN")
+    
     if not token:
         print("No Lichess API token found")
         sys.exit(1)
@@ -65,6 +66,7 @@ def fetch_and_prepare_dataset(username: str) -> ChessGameDataset:
     print(f"Fetching all games for {clean_username}")
 
     X, Y = [], []
+    move_tree = {}
 
     try:
         export_kwargs = {
@@ -80,6 +82,8 @@ def fetch_and_prepare_dataset(username: str) -> ChessGameDataset:
             full_pgn_text = games_pgn_data
         else:
             full_pgn_text = "".join(list(games_pgn_data))
+        
+        print(full_pgn_text)
 
         pgn_stream = io.StringIO(full_pgn_text)
 
@@ -104,18 +108,29 @@ def fetch_and_prepare_dataset(username: str) -> ChessGameDataset:
                 if board.turn == playing_as:
                     X.append(board_to_tensor(board))
                     Y.append(move_to_index(move))
+                
+                # Here we add moves / frequencies to our move tree
+                state_key = board.epd()
+                move_uci = move.uci()
+                if state_key not in move_tree:
+                    move_tree[state_key] = {}
+
+                move_tree[state_key][move_uci] = (
+                        move_tree[state_key].get(move_uci, 0) + 1
+                )
+
                 board.push(move)
 
-            game_count += 1
-            if game_count % 100 == 0:
-                print(f"Processed {game_count} games...")
+                game_count += 1
+                if game_count % 100 == 0:
+                    print(f"Processed {game_count} games...")
 
             print(f"Finished. Total games processed: {game_count}")
-            return ChessGameDataset(X,Y)
+            return ChessGameDataset(X,Y), move_tree
 
     except Exception as e:
         print(f"Error fetching data: {e}")
-        return ChessGameDataset([], [])
+        return ChessGameDataset([], []), {}
 
 
 # Retrieve the rapid elo for player for now
