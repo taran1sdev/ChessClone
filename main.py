@@ -1,16 +1,18 @@
 import chess
-from data_loader import fetch_and_prepare_dataset
+from data_loader import fetch_and_prepare_dataset, get_player_rapid_elo
 from trainer import train_clone_model
 from engine import AIPlayerClone
 
 def main():
     username = input("Enter lichess username: ").strip()
     
+    rapid_elo = get_player_rapid_elo(username) 
+    
     dataset = fetch_and_prepare_dataset(username)
-
+    
     model = train_clone_model(dataset, epochs=5)
 
-    clone_engine = AIPlayerClone(model)
+    clone_engine = AIPlayerClone(model, rapid_elo)
 
     board = chess.Board()
     user_color = chess.WHITE

@@ -1,5 +1,6 @@
 import io
 import os
+import sys
 import berserk 
 import chess
 import chess.pgn
@@ -55,7 +56,7 @@ def fetch_and_prepare_dataset(username: str) -> ChessGameDataset:
     token = os.getenv("LICHESS_API_TOKEN")
     if not token:
         print("No Lichess API token found")
-        os.exit(1)
+        sys.exit(1)
 
     session = berserk.TokenSession(token) 
     client = berserk.Client(session=session)
@@ -115,3 +116,25 @@ def fetch_and_prepare_dataset(username: str) -> ChessGameDataset:
     except Exception as e:
         print(f"Error fetching data: {e}")
         return ChessGameDataset([], [])
+
+
+# Retrieve the rapid elo for player for now
+# TODO: Later we should specify time controls for training data
+# and fallback elo..
+def get_player_rapid_elo(username: str) -> int:
+    token = os.getenv("LICHESS_API_TOKEN")
+    session = berserk.TokenSession(token) if token else None
+    client =  berserk.Client(session=session)
+    clean_username = username.strip().lower()
+
+    try:
+        user_data = client.users.get_public_data(clean_username)
+        
+        rapid_perfs = user_data.get("perfs", {}).get("rapid", {})
+
+        rating = rapid_perfs.get("rating", 1500)
+        return int(rating)
+
+    except Exception as e:
+        print(f"Could not retrieve rating: {e}")
+        return 1500

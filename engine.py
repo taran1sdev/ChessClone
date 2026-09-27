@@ -7,7 +7,7 @@ from data_loader import board_to_tensor, move_to_index
 class AIPlayerClone:
     def __init__(self, 
                  model, 
-                 fallback_elo: int = 1500, # Get this from lichess
+                 fallback_elo, 
                  stockfish_path: str = "stockfish"):
         self.model = model
         self.model.eval()
