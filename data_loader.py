@@ -83,16 +83,16 @@ def fetch_and_prepare_dataset(username: str) -> ChessGameDataset:
         else:
             full_pgn_text = "".join(list(games_pgn_data))
         
-        print(full_pgn_text)
-
         pgn_stream = io.StringIO(full_pgn_text)
-
+        
         game_count = 0
         while True: 
             game = chess.pgn.read_game(pgn_stream)
             if game is None:
                 break
 
+            game_count += 1
+            
             white = game.headers.get("White", "").strip().lower()
             black = game.headers.get("Black", "").strip().lower()
 
@@ -121,12 +121,9 @@ def fetch_and_prepare_dataset(username: str) -> ChessGameDataset:
 
                 board.push(move)
 
-                game_count += 1
-                if game_count % 100 == 0:
-                    print(f"Processed {game_count} games...")
 
-            print(f"Finished. Total games processed: {game_count}")
-            return ChessGameDataset(X,Y), move_tree
+        print(f"Finished. Total games processed: {game_count}")
+        return ChessGameDataset(X,Y), move_tree
 
     except Exception as e:
         print(f"Error fetching data: {e}")
