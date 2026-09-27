@@ -1,5 +1,5 @@
 # ChessClone AI
 
 TODO:
-- Expand the state planes to include turn indicator, castling rights, and attacked squares, this allows the model to better match the players "playstyle".
-- Retrieve the users rating deviation and pre-train the model on user games in that elo range, so the model is more likely to make principled moves that make sense at the cloned users strength.
+- Currently the clone lacks tactical awareness, to improve this we should implement move search trees and evaluate moves with depth ranges tailored to player elo level
+- We still need to incorporate "human-error", lower elo players should miss tactics and blunder more frequently whereas higher elo players should rarely miss winning tactical sequences
